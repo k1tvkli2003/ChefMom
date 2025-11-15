@@ -1,21 +1,28 @@
 import { GoogleGenAI } from "@google/genai";
 import { ChatMessage, GenerateContentParams, Mode, OutputData, PoemSuggestion, PromptTag, ProverbSuggestion, RefineContentParams } from '../types';
 
-// Read one or more API keys from environment variables
-// Prefer GEMINI_API_KEYS (comma-separated), then GEMINI_API_KEY, then API_KEY as fallback
-const rawKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || process.env.API_KEY;
-
-if (!rawKeys) {
-    throw new Error('GEMINI_API_KEYS / GEMINI_API_KEY / API_KEY is not defined in environment variables');
-}
+// Read one or more API keys from environment variables (compile-time injected by Vite)
+// Prefer GEMINI_API_KEYS (comma-separated), then GEMINI_API_KEY, then API_KEY as fallback.
+//
+// مهم: در فرانت‌اند، نبودن این متغیرها نباید باعث کرش شدن کل اپ شود،
+// بنابراین در صورت نبود کلید، فقط بدون کلید ادامه می‌دهیم و در زمان فراخوانی
+// توابع هوش مصنوعی، ارور مناسب نمایش داده می‌شود.
+const rawKeys =
+    (process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || process.env.API_KEY || '').trim();
 
 const apiKeys = rawKeys
-    .split(',')
-    .map(key => key.trim())
-    .filter(key => key.length > 0);
+    ? rawKeys
+        .split(',')
+        .map(key => key.trim())
+        .filter(key => key.length > 0)
+    : [];
 
 if (apiKeys.length === 0) {
-    throw new Error('No valid API keys provided in GEMINI_API_KEYS / GEMINI_API_KEY / API_KEY');
+    // No keys configured – app should still render, but AI features will fail with
+    // a clearer error message later when trying to obtain a client.
+    if (typeof console !== 'undefined') {
+        console.warn('ChefMom: no Gemini API keys configured (GEMINI_API_KEYS / GEMINI_API_KEY / API_KEY).');
+    }
 }
 
 // Create a client instance for each key and rotate them in a round-robin fashion

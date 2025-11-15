@@ -7,8 +7,10 @@ name: (DISABLED) Deploy Jekyll with GitHub Pages dependencies preinstalled
 # این ورک‌فلو را از روی push غیرفعال می‌کنیم و فقط به صورت دستی قابل اجراست.
 
 on:
-  # فقط اجرای دستی از تب Actions (دیگر روی push اجرا نمی‌شود)
-  workflow_dispatch:
+  # این ورک‌فلو کاملاً غیرفعال است و هیچ eventی آن را اجرا نمی‌کند.
+  push:
+    branches:
+      - __do_not_use_jekyll__
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
